@@ -232,6 +232,7 @@ preset_names = [
 curr_preset_id = 0
 
 paused = False
+flag_exit = False
 
 use_random_colors = False
 particles_radius = 0.02
@@ -261,6 +262,7 @@ camera.fov(55)
 def show_options():
     global use_random_colors
     global paused
+    global flag_exit
     global particles_radius
     global curr_preset_id
     global g_x, g_y, g_z
@@ -294,7 +296,7 @@ def show_options():
             "jelly color", material_colors[JELLY])
         set_color_by_material(np.array(material_colors))
     particles_radius = window.GUI.slider_float("particles radius ",
-                                               particles_radius, 0, 0.1)
+                                               particles_radius, 0.001, 0.05)
     if window.GUI.button("restart"):
         init()
     if paused:
@@ -303,6 +305,8 @@ def show_options():
     else:
         if window.GUI.button("Pause"):
             paused = True
+    if window.GUI.button("Bye"):
+        flag_exit = True
     window.GUI.end()
 
 
@@ -329,6 +333,9 @@ while window.running:
     if not paused:
         for s in range(steps):
             substep(g_x, g_y, g_z)
+
+    if flag_exit:
+        window.running = False
 
     render()
 

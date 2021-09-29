@@ -61,6 +61,12 @@ class CelestialObject:
     def Number(self):
         return self.n
 
+    def getG(self):
+        return self.G
+
+    def setG(self, numG):
+        self.G = numG
+
 
 @ti.data_oriented
 class Star(CelestialObject):
@@ -92,7 +98,7 @@ class Planet(CelestialObject):
     @ti.kernel
     def computeForce(self, stars: ti.template()):
         self.clearForce()
-        G = 1.0
+        #G = 1.0
         for i in range(self.n):
             p = self.pos[i]
 
@@ -100,9 +106,9 @@ class Planet(CelestialObject):
                 if i != j:
                     diff = self.pos[j] - p
                     r = diff.norm(1e-2)
-                    self.force[i] += G * self.m * self.m * diff / r**3
+                    self.force[i] += self.G * self.m * self.m * diff / r**3
 
             for j in range(stars.Number()):
                 diff = stars.Pos()[j] - p
                 r = diff.norm(1e-2)
-                self.force[i] += G * self.m * stars.Mass() * diff / r**3
+                self.force[i] += self.G * self.m * stars.Mass() * diff / r**3
