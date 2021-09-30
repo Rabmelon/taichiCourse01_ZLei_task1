@@ -7,7 +7,7 @@ class CelestialObject:
         # Math contants
         self.PI = ti.atan2(1, 1) * 4
         self.G = ti.field(ti.f32, shape=())
-        self.G[None] = 1e-8
+        self.G[None] = 1e-5
 
         # celestial object related fields
         self.dim = dimension
@@ -21,15 +21,24 @@ class CelestialObject:
         str_tmp = "number of bodies: " + str(self.n) + "; mass of bodies: " + str(self.m)
         print(str_tmp)
 
-    def display_2d(self, convas, r=0.005, c=(1, 1, 1)):
-        convas.set_background_color((17 / 255, 47 / 255, 65 / 255))
-        convas.circles(self.pos, radius=r, color=c)
+    def display(self, canvas, scene, camera, r=0.005, c=(1, 1, 1)):
+        if self.dim == 2:
+            canvas.set_background_color((17 / 255, 47 / 255, 65 / 255))
+            canvas.circles(self.pos, radius=r, color=c)
+        elif self.dim == 3:
+            scene.set_camera(camera)
+            scene.ambient_light((0, 0, 0))
+            scene.point_light(pos=(0.5, 1.5, 0.5), color=(0.5, 0.5, 0.5))
+            scene.point_light(pos=(0.5, 1.5, 1.5), color=(0.5, 0.5, 0.5))
+            scene.particles(self.pos, radius=r, color=c)
+            canvas.scene(scene)
 
     @ti.func
     def clearForce(self):
         for i in self.force:
-            self.force[i] = ti.Vector([0.0, 0.0])
+            self.force[i] = ti.Vector([0.0 for j in range(self.dim)])
 
+    """
     @ti.func
     def generateThetaAndR(pi, i, n, min_r):
         assert (min_r < 1) & (min_r > 0)
@@ -38,7 +47,7 @@ class CelestialObject:
         return theta, r
 
     @ti.kernel
-    def initialize_ring(self, c_x: ti.f32, c_y: ti.f32, off_size: ti.f32, init_speed: ti.f32, min_r: float):
+    def initialize_ring(self, c_x: ti.f32, c_y: ti.f32, off_size: ti.f32, init_speed: ti.f32, min_r: ti.f32):
         for i in range(self.n):
             if self.n == 1:
                 self.pos[i] = ti.Vector([c_x, c_y])
@@ -49,20 +58,18 @@ class CelestialObject:
                 center = ti.Vector([c_x, c_y])
                 self.pos[i] = center + r * offset_dir * off_size
                 self.vel[i] = ti.Vector([-offset_dir[1], offset_dir[0]]) * init_speed
+    """
 
     @ti.kernel
-    def initialize_range(self, c_x: ti.f32, c_y: ti.f32, off_size: ti.f32, init_speed: ti.f32):
+    def initialize_range(self, pos_center: ti.template(), off_size: ti.f32, init_speed: ti.f32):
         for i in range(self.n):
             if self.n == 1:
-                self.pos[i] = ti.Vector([c_x, c_y])
-                self.vel[i] = ti.Vector([0.0, 0.0])
+                self.pos[i] = pos_center
+                self.vel[i] = ti.Vector([0.0 for j in range(self.dim)])
             else:
-                offset = ti.Vector([
-                    ti.random() for j in range(self.dim)
-                ]) * off_size - ti.Vector([off_size for j in range(self.dim)]) * 0.5
-                center = ti.Vector([c_x, c_y])
-                self.pos[i] = center + offset
-                self.vel[i] = ti.Vector([-offset[1], offset[0]]) * init_speed
+                offset = ti.Vector([ti.random() for j in range(self.dim)]) * off_size - ti.Vector([off_size for j in range(self.dim)]) * 0.5
+                self.pos[i] = pos_center + offset
+                self.vel[i] = ti.Vector([-offset[1], offset[0], 0.0]) * init_speed # 如何计算三维速度方向？
 
     @ti.kernel
     def computeForce(self):
