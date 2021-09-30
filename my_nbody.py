@@ -2,13 +2,18 @@ import taichi as ti
 
 ti.init(ti.cuda)
 
-# 目的1：创建一个维度无关的pos和pos_center，在中心点周围随机生成所有的pos坐标值 √
-# 目的2：创建一个2d的N-body系统，实现2d的计算和GGUI显示 √
-# 目的3：创建一个2d系统，加入鼠标点击后创建一团新星团的功能
+# 1：创建一个维度无关的pos和pos_center，在中心点周围随机生成所有的pos坐标值 √
+# 2：创建一个2d的N-body系统，实现2d的计算和GGUI显示 √
+# 3：创建一个2d系统，加入鼠标点击后创建一团新星团的功能 ×放弃，pos ≠ pos_c？
+# 4：改造为2d面向对象程序
+# 5：实现3d计算，应该只需要拓展计算初速度程序的2d至3d了
+# 6：实现3d的GGUI渲染
+# 7：3d场景如何实现交互添加新星团？
+# 8：改造为维度无关的面向对象程序（2d或3d自动选择执行）
 
 ## def parameters
 dim = 2
-N = 200
+N = 500
 m = 1
 G = 1
 
@@ -23,6 +28,7 @@ res = (1000, 600)
 pos = ti.Vector.field(dim, ti.f32, N)
 vel = ti.Vector.field(dim, ti.f32, N)
 force = ti.Vector.field(dim, ti.f32, N)
+
 pos_c = ti.Vector([0.5, 0.4])
 # pos_c = ti.Vector([0.5, 0.2, 0.4])
 
@@ -42,12 +48,11 @@ camera = ti.ui.make_camera()
 def initialize(pos_center: ti.template()):
     for i in range(N):
         offset = ti.Vector([ti.random() for j in range(dim)]) * off_scale - ti.Vector([off_scale for j in range(dim)]) * 0.5
+        # 如何在矩形的视窗内创建方形的星团？
         pos[i] = pos_center + offset
-        # print("offset[", i, "] = ", offset)
 
         vel[i] = [-offset.y, offset.x] # 如何计算三维速度方向？
         vel[i] *= init_vel
-        # print("vel[", i, "] = ", vel[i])
 
 @ti.kernel
 def cal_force():
@@ -77,15 +82,19 @@ def show_options():
     global flag_exit, flag_pause, id_frame
     global G, off_scale, p_radius, substepping, dt, m
 
-    my_ggui.GUI.begin("Property", 0.03, 0.05, 0.2, 0.2)
+    my_ggui.GUI.begin("Property", 0.03, 0.05, 0.2, 0.15)
+    p_radius = my_ggui.GUI.slider_float("radius", p_radius, 1e-3, 1e-2)
+    # 下面的变量暂时无法传参
     # G = my_ggui.GUI.slider_float("G", G, 1e-11, 1)
     # off_scale = my_ggui.GUI.slider_float("off scale", off_scale, 0, 1)
-    p_radius = my_ggui.GUI.slider_float("radius", p_radius, 1e-3, 1e-2)
     # substepping = my_ggui.GUI.slider_float("substepping", substepping, 1, 1e2)
     my_ggui.GUI.end()
 
-    my_ggui.GUI.begin("Options", 0.03, 0.3, 0.2, 0.4)
+    my_ggui.GUI.begin("Options", 0.03, 0.25, 0.2, 0.25)
+    str_frame = "Frame: " + str(id_frame)
+    my_ggui.GUI.text(str_frame)
     if my_ggui.GUI.button("Restart"):
+        id_frame = 0
         initialize(pos_c)
     if flag_pause:
         if my_ggui.GUI.button("Continue"):
@@ -99,32 +108,30 @@ def show_options():
 
 def render():
     if dim == 3:
-        # The code is still wrong
-        camera.position(0.5, 1.0, 1.95)
-        camera.lookat(0.5, 0.3, 0.5)
-        camera.fov(55)
-
-        camera.track_user_inputs(my_ggui, movement_speed=0.05, hold_key=ti.ui.LMB)
-        scene.set_camera(camera)
-        scene.ambient_light((0, 0, 0))
-        scene.particles(pos, per_vertex_color=0xffffff, radius=p_radius)
-        scene.point_light(pos=(0.5, 1.5, 0.5), color=(0.5, 0.5, 0.5))
-        scene.point_light(pos=(0.5, 1.5, 1.5), color=(0.5, 0.5, 0.5))
-        canvas.scene(scene)
+        print("3D Renderer Designing...")
     elif dim == 2:
         backgroundcolor = (17 / 255, 47 / 255, 65 / 255) # 0x112F41
         canvas.set_background_color(backgroundcolor)
         canvas.circles(pos, radius=p_radius, color=(1, 1, 1))
 
-
-
 ## main
 print("Hallo, N-Body")
-
 initialize(pos_c)
 
 while my_ggui.running:
+    for e in my_ggui.get_events(ti.ui.PRESS):
+        if e.key in [ti.ui.ESCAPE]:
+            exit()
+        elif e.key == ti.ui.SPACE:
+            flag_pause = not flag_pause
+        elif (e.key == ti.ui.LMB) & (dim == 0):
+            # Wrong of pos????? What's the difference between this "pos" and the "pos_c" defined already?
+            pos_tmp = my_ggui.get_cursor_pos()
+            pos = ti.Vector([pos_tmp[0], pos_tmp[1]])
+            initialize(pos)
+
     if not flag_pause:
+        id_frame += 1
         for i in range(substepping):
             cal_force()
             update()
@@ -135,6 +142,7 @@ while my_ggui.running:
     my_ggui.show()
 
 """
+# 注意gui和ggui的尺寸计算方式似乎不同
 my_gui = ti.GUI("My N-Body GUI", res)
 while my_gui.running:
     for i in range(substepping):
