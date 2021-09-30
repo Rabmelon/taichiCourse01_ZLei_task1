@@ -8,17 +8,31 @@
 ## 背景简介
 想要好玩好看！
 
+**阶段性目标：**
+1. 创建一个维度无关的pos和pos_center，在中心点周围随机生成所有的pos坐标值 √
+2. 创建一个2d的N-body系统，实现2d的计算和GGUI显示 √
+3. 创建一个2d系统，加入鼠标点击后创建一团新星团的功能 ×放弃，pos ≠ pos_c？
+4. 改造为2d面向对象程序 √
+5. 实现3d计算，应该只需要拓展计算初速度程序的2d至3d了
+6. 实现3d的GGUI渲染
+7. 3d场景如何实现交互添加新星团？
+8. 改造为维度无关的面向对象程序（2d或3d自动选择执行）
+
+
 ## 成功效果展示
-![simple 2d N-body demo in 30. Sep. 2021](./img/my_nbody_ggui_show_210930.png)
+![simple 2d N-body demo in 30. Sep. 2021](./img/my_nbody_ggui_show_211001_01.png)
 ## 整体结构（Optional）
 ```
 -LICENSE
 -|img  存储展示图片
 -|test  存储参考和试验用的代码
 -README.MD
--my_nbody.py
+-my_nbody.py  面向结构的初始2d程序：
+-nbody_ggui.py  面向对象2d程序：
+-CelestialObject.py  面向对象类文件
 ```
 
 ## 运行方式
-相信读者们看到这里已经迫不及待想尝试了，这里标记好快速上手的方式即可~
-  例如:  `python3 my_nbody.py`
+`python3 my_nbody.py`
+or
+`python3 nbody_ggui.py`
