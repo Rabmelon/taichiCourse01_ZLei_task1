@@ -5,21 +5,13 @@ ti.init(arch=ti.gpu)
 print("Hallo, Taichi")
 
 ## def parameters
-bodies = CelestialObject(3, 1000, 1)
+bodies = CelestialObject(2, 10, 1)
 
 title_str = "N-Body" + ("-2D" if bodies.dim == 2 else "-3D" if bodies.dim == 3 else "-Error")
 my_ggui = ti.ui.Window(title_str, (1000, 600))
 my_canvas = my_ggui.get_canvas()
 my_scene = ti.ui.Scene()
 my_camera = ti.ui.make_camera()
-pos_camera_x = 1
-pos_camera_y = 1
-pos_camera_z = 1
-lookat_camera_x = 0
-lookat_camera_y = 0
-lookat_camera_z = 0
-fov_camera = 100
-flag_RMB = False
 
 flag_pause = True
 
@@ -33,8 +25,15 @@ id_frame = 0
 if bodies.dim == 2:
     pos_c = ti.Vector([0.0, 0.0])
 elif bodies.dim == 3:
-    # pos_c = ti.Vector([0.6, 0.5, 0.2])
     pos_c = ti.Vector([0.0, 0.0, 0.0])
+    pos_cam_x = 0.5
+    pos_cam_y = 1.25
+    pos_cam_z = 1.5
+    lookat_cam_x = 0
+    lookat_cam_y = 0
+    lookat_cam_z = 0
+    fov_cam = 100
+    flag_RMB = False
 
 bodies.initialize_range(pos_c, off_size, init_speed)
 
@@ -53,13 +52,13 @@ while my_ggui.running:
     my_ggui.GUI.end()
     if bodies.dim == 3:
         my_ggui.GUI.begin("Camera options", 0.03, 0.55, 0.3, 0.35)
-        pos_camera_x = my_ggui.GUI.slider_float("pos x of camera", pos_camera_x, -2.5, 2.5)
-        pos_camera_y = my_ggui.GUI.slider_float("pos y of camera", pos_camera_y, -2.5, 2.5)
-        pos_camera_z = my_ggui.GUI.slider_float("pos z of camera", pos_camera_z, -2.5, 2.5)
-        lookat_camera_x = my_ggui.GUI.slider_float("lookat x of camera", lookat_camera_x, -2.5, 2.5)
-        lookat_camera_y = my_ggui.GUI.slider_float("lookat y of camera", lookat_camera_y, -2.5, 2.5)
-        lookat_camera_z = my_ggui.GUI.slider_float("lookat z of camera", lookat_camera_z, -2.5, 2.5)
-        fov_camera = my_ggui.GUI.slider_float("fov of camera", fov_camera, 10, 200)
+        pos_cam_x = my_ggui.GUI.slider_float("pos x of camera", pos_cam_x, -2.5, 2.5)
+        pos_cam_y = my_ggui.GUI.slider_float("pos y of camera", pos_cam_y, -2.5, 2.5)
+        pos_cam_z = my_ggui.GUI.slider_float("pos z of camera", pos_cam_z, -2.5, 2.5)
+        lookat_cam_x = my_ggui.GUI.slider_float("lookat x of camera", lookat_cam_x, -2.5, 2.5)
+        lookat_cam_y = my_ggui.GUI.slider_float("lookat y of camera", lookat_cam_y, -2.5, 2.5)
+        lookat_cam_z = my_ggui.GUI.slider_float("lookat z of camera", lookat_cam_z, -2.5, 2.5)
+        fov_cam = my_ggui.GUI.slider_float("fov of camera", fov_cam, 10, 200)
         if flag_RMB:
             if my_ggui.GUI.button("RMB rotation off"):
                 flag_RMB = False
@@ -92,8 +91,8 @@ while my_ggui.running:
         if flag_RMB:
             my_camera.track_user_inputs(my_ggui, movement_speed=0.05, hold_key=ti.ui.RMB)
         else:
-            my_camera.position(pos_camera_x, pos_camera_y, pos_camera_z)
-            my_camera.lookat(lookat_camera_x, lookat_camera_y, lookat_camera_z)
-            my_camera.fov(fov_camera)
+            my_camera.position(pos_cam_x, pos_cam_y, pos_cam_z)
+            my_camera.lookat(lookat_cam_x, lookat_cam_y, lookat_cam_z)
+            my_camera.fov(fov_cam)
     bodies.display(my_canvas, my_scene, my_camera, radius_body)
     my_ggui.show()
