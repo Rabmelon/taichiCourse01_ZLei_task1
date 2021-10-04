@@ -25,14 +25,14 @@
 
 ## 问题
 1. Taichi kernel中，若一个field涉及不同维度下的不同长度，无法直接使用if-else通过判断分支使其长度不同。比如`if dim == 2: vel=[0, 0]; elif dim == 3: vel=[0,0,0];`就会报错，在程序中我使用了赋值过程内的if-else解决，但是感觉不是很灵活和漂亮。这是由于kernel编译时，会同时检查所有分支中变量的长度，会出现不一致的情况。这个问题或许需要等到Taichi支持在kernel内部临时定义field才能解决？
-2. 3D camera中，track_user_inputs方法改变的只是对当前scene渲染到canvas的图像的camera，并非改变camera的pos和lookat值？本程序中右键拖拽导致的图案变形非常严重，如何改善？
+2. 3D camera中，track_user_inputs方法改变的只是对当前scene渲染到canvas的图像的camera，并非改变camera的pos和lookat值？应如何获取旋转后camera的pos、lookat等数值呢？以及程序中右键拖拽导致的图案变形比较严重，这种变形应该如何改善？
 
 ## 成功效果展示
 2D 系统：
-![simple 2d N-body demo in 04. Oct. 2021](./img/my_nbody_ggui_show_211004_03.png)
+![simple 2d N-body demo in 04. Oct. 2021](./img/my_nbody_ggui_show_211004_03.gif)
 
 3D 系统：
-![simple 3d N-body demo in 04. Oct. 2021](./img/my_nbody_ggui_show_211004_02.png)
+![simple 3d N-body demo in 04. Oct. 2021](./img/my_nbody_ggui_show_211004_02.gif)
 
 ## 整体结构
 ```
