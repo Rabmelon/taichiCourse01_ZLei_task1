@@ -5,7 +5,9 @@ ti.init(arch=ti.gpu)
 print("Hallo, Taichi")
 
 ## def parameters
+# (dimension = 2 or 3, number of bodies >= 1, mass = arbitrary positive number)
 bodies = CelestialObject(3, 1000, 1)
+# bodies = CelestialObject(2, 300, 1)
 
 title_str = "N-Body" + ("-2D" if bodies.dim == 2 else "-3D" if bodies.dim == 3 else "-Error")
 my_ggui = ti.ui.Window(title_str, (1000, 600))
@@ -28,12 +30,8 @@ if bodies.dim == 2:
     radius_body = 0.005
 elif bodies.dim == 3:
     pos_c = ti.Vector([0.0, 0.0, 0.0])
-    pos_cam_x = 0.5
-    pos_cam_y = 1.25
-    pos_cam_z = 1.5
-    lookat_cam_x = 0
-    lookat_cam_y = 0
-    lookat_cam_z = 0
+    [pos_cam_x, pos_cam_y, pos_cam_z] = [0.5, 1.25, 1.5]
+    [lookat_cam_x, lookat_cam_y, lookat_cam_z] = [0, 0, 0]
     fov_cam = 50
     flag_RMB = False
     radius_body = 0.01
@@ -49,12 +47,12 @@ while my_ggui.running:
     my_ggui.GUI.text("G = {:.5e}".format(bodies.G[None]))
     my_ggui.GUI.text("Frame: " + str(id_frame))
     my_ggui.GUI.end()
-    my_ggui.GUI.begin("Property need restart", 0.03, 0.3, 0.2, 0.2)
+    my_ggui.GUI.begin("Property needs restart", 0.03, 0.3, 0.2, 0.2)
     off_size = my_ggui.GUI.slider_float("off size", off_size, 0, 1)
     init_speed = my_ggui.GUI.slider_float("velocity 0", init_speed, 0, 10) # 初速度对模拟没有什么影响？
     my_ggui.GUI.end()
     if bodies.dim == 3:
-        my_ggui.GUI.begin("Camera options", 0.03, 0.55, 0.3, 0.35)
+        my_ggui.GUI.begin("Camera options", 0.03, 0.55, 0.3, 0.4)
         pos_cam_x = my_ggui.GUI.slider_float("pos x of camera", pos_cam_x, -2.5, 2.5)
         pos_cam_y = my_ggui.GUI.slider_float("pos y of camera", pos_cam_y, -2.5, 2.5)
         pos_cam_z = my_ggui.GUI.slider_float("pos z of camera", pos_cam_z, -2.5, 2.5)
@@ -81,12 +79,8 @@ while my_ggui.running:
             bodies.initialize_range(pos_c, off_size, init_speed)
         elif e.key == 'c':
             if bodies.dim == 3:
-                pos_cam_x = 0.5
-                pos_cam_y = 1.25
-                pos_cam_z = 1.5
-                lookat_cam_x = 0
-                lookat_cam_y = 0
-                lookat_cam_z = 0
+                [pos_cam_x, pos_cam_y, pos_cam_z] = [0.5, 1.25, 1.5]
+                [lookat_cam_x, lookat_cam_y, lookat_cam_z] = [0, 0, 0]
                 fov_cam = 50
         elif e.key == ti.ui.LMB:
             pos = my_ggui.get_cursor_pos()
