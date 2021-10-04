@@ -1,6 +1,5 @@
 import taichi as ti
 
-
 @ti.data_oriented
 class CelestialObject:
     def __init__(self, dimension=2, N=100, mass=1) -> None:
@@ -34,7 +33,7 @@ class CelestialObject:
         for i in self.force:
             self.force[i] = ti.Vector([0.0 for j in range(self.dim)])
 
-    @ti.kernel # 生成正方形/立方体形状的初始分布
+    @ti.kernel
     def initialize_range(self, pos_center: ti.template(), off_size: ti.f32, init_speed: ti.f32):
         for i in range(self.n):
             if self.n == 1:

@@ -84,7 +84,7 @@ while my_ggui.running:
                 fov_cam = 50
         elif e.key == ti.ui.LMB:
             pos = my_ggui.get_cursor_pos()
-            print(pos)
+            # print(pos)
 
     # Main loop
     if not flag_pause:
