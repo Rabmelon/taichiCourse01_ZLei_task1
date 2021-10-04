@@ -5,7 +5,7 @@ ti.init(arch=ti.gpu)
 print("Hallo, Taichi")
 
 ## def parameters
-bodies = CelestialObject(2, 10, 1)
+bodies = CelestialObject(3, 1000, 1)
 
 title_str = "N-Body" + ("-2D" if bodies.dim == 2 else "-3D" if bodies.dim == 3 else "-Error")
 my_ggui = ti.ui.Window(title_str, (1000, 600))
@@ -17,13 +17,15 @@ flag_pause = True
 
 off_size = 0.3
 init_speed = 1
-radius_body = 0.01
+bodies.G[None] = 1e-3
 
 h = 1e-4
 id_frame = 0
 
 if bodies.dim == 2:
-    pos_c = ti.Vector([0.0, 0.0])
+    # pos_c = ti.Vector([0.0, 0.0])
+    pos_c = ti.Vector([0.4, 0.5])
+    radius_body = 0.005
 elif bodies.dim == 3:
     pos_c = ti.Vector([0.0, 0.0, 0.0])
     pos_cam_x = 0.5
@@ -32,8 +34,9 @@ elif bodies.dim == 3:
     lookat_cam_x = 0
     lookat_cam_y = 0
     lookat_cam_z = 0
-    fov_cam = 100
+    fov_cam = 50
     flag_RMB = False
+    radius_body = 0.01
 
 bodies.initialize_range(pos_c, off_size, init_speed)
 
@@ -76,6 +79,15 @@ while my_ggui.running:
         elif e.key == 'r':
             id_frame = 0
             bodies.initialize_range(pos_c, off_size, init_speed)
+        elif e.key == 'c':
+            if bodies.dim == 3:
+                pos_cam_x = 0.5
+                pos_cam_y = 1.25
+                pos_cam_z = 1.5
+                lookat_cam_x = 0
+                lookat_cam_y = 0
+                lookat_cam_z = 0
+                fov_cam = 50
         elif e.key == ti.ui.LMB:
             pos = my_ggui.get_cursor_pos()
             print(pos)

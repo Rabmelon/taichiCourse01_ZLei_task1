@@ -7,7 +7,6 @@ class CelestialObject:
         # Math contants
         self.PI = ti.atan2(1, 1) * 4
         self.G = ti.field(ti.f32, shape=())
-        self.G[None] = 1e-3
 
         # celestial object related fields
         self.dim = dimension
@@ -17,12 +16,6 @@ class CelestialObject:
         self.vel = ti.Vector.field(self.dim, ti.f32, shape=self.n)
         self.force = ti.Vector.field(self.dim, ti.f32, shape=self.n)
         self.color = ti.Vector.field(3, ti.f32, shape=self.n)
-
-        # assist
-
-    def printObj(self):
-        str_tmp = "number of bodies: " + str(self.n) + "; mass of bodies: " + str(self.m)
-        print(str_tmp)
 
     def display(self, canvas, scene, camera, r=0.005, c=(1, 1, 1)):
         canvas.set_background_color((17 / 255, 47 / 255, 65 / 255))
@@ -41,27 +34,6 @@ class CelestialObject:
         for i in self.force:
             self.force[i] = ti.Vector([0.0 for j in range(self.dim)])
 
-    @ti.func
-    def generateThetaAndR(pi, i, n, min_r):
-        assert (min_r < 1) & (min_r > 0)
-        theta = 2 * pi * ti.random()  # theta \in (0, 2PI)
-        r = (ti.sqrt(ti.random()) * (1 - min_r) + min_r)  # r \in (min_r,1)
-        return theta, r
-
-    @ti.kernel # 生成环/球壳形状的初始分布
-    def initialize_ring(self, c_x: ti.f32, c_y: ti.f32, off_size: ti.f32, init_speed: ti.f32, min_r: ti.f32):
-        for i in range(self.n):
-            if self.n == 1:
-                self.pos[i] = ti.Vector([c_x, c_y])
-                self.vel[i] = ti.Vector([0.0, 0.0])
-            else:
-                theta, r = self.generateThetaAndR(self.PI, i, self.n, min_r)
-                offset_dir = ti.Vector([ti.cos(theta), ti.sin(theta)])
-                center = ti.Vector([c_x, c_y])
-                self.pos[i] = center + r * offset_dir * off_size
-                self.pos[i] = ti.Vector([ti.random() for j in range(self.dim)]) * init_speed # 如何统一2/3d初速度方向？
-                # self.vel[i] = ti.Vector([-offset[1], offset[0]]) * init_speed
-
     @ti.kernel # 生成正方形/立方体形状的初始分布
     def initialize_range(self, pos_center: ti.template(), off_size: ti.f32, init_speed: ti.f32):
         for i in range(self.n):
@@ -71,8 +43,8 @@ class CelestialObject:
             else:
                 offset = ti.Vector([ti.random() for j in range(self.dim)]) * off_size - ti.Vector([off_size for j in range(self.dim)]) * 0.5
                 self.pos[i] = pos_center + offset
-                self.pos[i] = ti.Vector([ti.random() for j in range(self.dim)]) * init_speed # 如何统一2/3d初速度方向？
-                # self.vel[i] = ti.Vector([-offset[1], offset[0]]) * init_speed
+                # self.vel[i] = ti.Vector([ti.random() for j in range(self.dim)]) * init_speed # 如何统一2/3d初速度方向？
+                self.vel[i] = ti.Vector([-offset[1], offset[0], 0.0] if self.dim == 3 else [-offset[1], offset[0]] if self.dim == 2 else [0.0 for j in range(self.dim)]) * init_speed # 2d初速度严格，3d初速度选在xoy平面上
 
     @ti.kernel
     def computeForce(self):
